@@ -23,9 +23,11 @@ define :progressbar [
         \run: 0
         \animations: ["-", "\\", "|", "/", "-", "\\", "|", "/"]
         \animated?: not? null? attr 'animated
+        \hasDetails?: null? attr 'noDetails
+        \hasBar?: null? attr 'noBar
 
-        \label: (lbl: <= attr 'label)? -> lbl -> "Progress:"
-        \detail: (attr 'detailed)? -> "Working..." -> ""
+        \label: (lbl: <= attr 'label)? -> lbl -> "Downloading:"
+        \processing: ""
 
         \barBefore: (bab: <= attr 'barBefore)? -> bab -> ""
         \barAfter: (baf: <= attr 'barAfter)? -> baf -> ""
@@ -33,10 +35,11 @@ define :progressbar [
         \onColor: (onc: <= attr 'onColor)? -> onc -> #white
         \offMark: (offm: <= attr 'offMark)? -> offm -> "░"
         \offColor: (offc: <= attr 'offColor)? -> offc -> #white
-
+        \persistent?: not? null? attr 'persistent
         \width: (wdt: <= attr 'width)? -> wdt -> 0
 
         \startTime: to :integer now
+        \active?: true
 
         if not? null? attr 'plain [
             \onMark: "="
@@ -67,10 +70,14 @@ define :progressbar [
     ]
 
     goBack: method [][
-        prints repeat "\b" (empty? \detail)? -> \lineWidth -> inc 2 * \lineWidth
+        prints repeat "\b" \lineWidth * enumerate @[\hasDetails? \hasBar?] => [&]
     ]
 
-    timeLeft: method [num][
+    cleanUp: method [][
+        prints repeat " " \lineWidth * enumerate @[\hasDetails? \hasBar?] => [&]
+    ]
+
+    friendlyTime: method [num][
         if num = 0 -> return "< 1s"
         if num < 60 -> return ~"~ |num|s"
         if num = 60 -> return "< 1min"
@@ -85,26 +92,41 @@ define :progressbar [
     ]
 
     showDetailLine: method [][
-        prints (empty? \detail)? -> "" [
-            dtlText: ~"|\current|/|\maxValue| ▶ |\detail|"
+        prints (not? \hasDetails?)? -> "" [
+            currentlyProcessed: ""
+            if not? empty? \processing ->
+                currentlyProcessed: ~"➔ |\processing|"
+            dtlText: ~{|\current|/|\maxValue| |currentlyProcessed|}
             timeUpToNow: (to :integer now) - \startTime
             remaining: ((\maxValue - \current) * timeUpToNow) / \current
-            remaining: (\timeLeft remaining) ++ " left"
-            (repeat " " (\animated? ? -> 2 -> 0) + 2 + size \label) ++ color #gray dtlText ++ (pad.left remaining \lineWidth - sum @[2 + size \label, size dtlText, (\animated? ? -> 2 -> 0), 8]) ++ repeat " " 8
+            remaining: (\friendlyTime remaining) ++ " left"
+            (not? \hasBar?)? 
+                [
+                    pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
+                    (repeat " " (\animated? ? -> 2 -> 0) + 1) ++ \label ++ " " ++ color #gray dtlText ++ (pad.left remaining \lineWidth - sum @[2 + size \label, size dtlText, (\animated? ? -> 2 -> 0), 8]) ++ " " ++ color #green pcent
+                ]
+                -> (repeat " " (\animated? ? -> 2 -> 0) + 2 + size \label) ++ color #gray dtlText ++ (pad.left remaining \lineWidth - sum @[2 + size \label, size dtlText, (\animated? ? -> 2 -> 0), 8]) ++ repeat " " 8
         ]
     ]
 
     showBarLine: method [][
-        pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
-        spaceAvailable: \lineWidth - sum @[inc size \label, size pcent, 3, \animated? ? -> 2 -> 0, size \barBefore, size \barAfter]
+        (not? \hasBar?)? -> prints "" [
+            pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
+            spaceAvailable: \lineWidth - sum @[inc size \label, size pcent, 3, \animated? ? -> 2 -> 0, size \barBefore, size \barAfter]
 
-        ons: (\current * spaceAvailable) / \maxValue
-        offs: spaceAvailable - ons
+            ons: (\current * spaceAvailable) / \maxValue
+            offs: spaceAvailable - ons
 
-        bar: \barBefore ++ (\colored \onColor repeat \onMark ons) ++ (\colored \offColor repeat \offMark offs) ++ \barAfter
+            bar: \barBefore ++ (\colored \onColor repeat \onMark ons) ++ (\colored \offColor repeat \offMark offs) ++ \barAfter
 
-        pr: \animations\[\run % 8]
-        prints [(\animated? ? -> " " ++ pr -> "") ++ " " ++ color.bold #white \label bar color #green pcent]
+            pr: \animations\[\run % 8]
+            prints [(\animated? ? -> " " ++ pr -> "") ++ " " ++ color.bold #white \label bar color #green pcent]
+        ]
+    ]
+
+    showFinalLine: method [][
+        prints " " ++ (color.bold #white \label) ++ " " ++ "Completed in " ++ (\friendlyTime (to :integer now) - \startTime) ++ " " ++ color #green "✔"
+        ;print \friendlyTime (to :integer now) - \startTime
     ]
 
     ;---------------------------
@@ -119,10 +141,19 @@ define :progressbar [
         \showDetailLine
         \showBarLine
 
-        if \current >= \maxValue -> \stop
+        if \current >= \maxValue [
+            \active?: false
+            \stop
+        ]
     ]
 
     stop: method [][
+        if not? \persistent? [
+            \goBack
+            \cleanUp
+            \goBack
+            \showFinalLine
+        ]
         print ""
         cursor true
     ]

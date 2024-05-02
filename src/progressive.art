@@ -28,7 +28,7 @@ define :progressive [
 
     internalFunctions: [
         processing: function [what][
-            \progressbar\detail: to :string what
+            \progressbar\processing: to :string what
         ]
     ]
     
@@ -37,7 +37,8 @@ define :progressive [
             do blk
             \progressbar\increase 1
         ]
-        \progressbar\stop
+        if \progressbar\active? ->
+            \progressbar\stop
     ]
 
     ;---------------------------
@@ -63,7 +64,7 @@ define :progressive [
     executeIterator: method [iter :literal][
         do \initializeProgressBar
         return \internalFunctions ++ 
-                 @[to :word iter] ++ 
+               (@[to :word iter]) ++ 
                       \mainLooper
     ]
 
@@ -105,7 +106,7 @@ progressive: to :progressive []!
 
 if standalone? ::
 
-    progressive\loop.plain repeat list "." 30 'x [
+    progressive\loop repeat list "." 3 'x [
         processing x
         pause 200
     ]
