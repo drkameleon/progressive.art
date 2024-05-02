@@ -1,1 +1,2 @@
 entry: {src/progressive}
+requires: [> 0.9.83]

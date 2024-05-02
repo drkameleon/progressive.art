@@ -7,4 +7,105 @@
 ;
 ; MIT License
 ; (c) 2024 Yanis Zafirópulos
+;-----------------------------------------------
+; @file src/progressive.art
 ;===============================================
+
+import ./"progressbar"!
+
+define :progressive [
+    ;---------------------------
+    ; Templates
+    ;---------------------------
+
+    initializeProgressBar: [
+        maxLim: new \getMaxValue coll
+        if and? [block? prm][1 < prmSize: <= size prm] ->
+            'maxLim / prmSize
+
+        \progressbar: to :progressbar @[maxLim]!
+    ]
+
+    internalFunctions: [
+        processing: function [what][
+            \progressbar\detail: to :string what
+        ]
+    ]
+    
+    mainLooper: [
+        coll prm [
+            do blk
+            \progressbar\increase 1
+        ]
+        \progressbar\stop
+    ]
+
+    ;---------------------------
+    ; Helpers
+    ;---------------------------
+
+    getMaxValue: function [collection][
+        getCollectionParamSize: function [c][
+            (integer? c)? -> c
+                          -> size c
+        ]
+
+        unless literal? collection ->
+            return getCollectionParamSize collection
+
+        return getCollectionParamSize var collection
+    ]
+
+    ;---------------------------
+    ; Private methods
+    ;---------------------------
+
+    executeIterator: method [iter :literal][
+        do \initializeProgressBar
+        return \internalFunctions ++ 
+                 @[to :word iter] ++ 
+                      \mainLooper
+    ]
+
+    ;---------------------------
+    ; Public methods
+    ;---------------------------
+
+    new: method [maximumValue :integer][
+        return to :progressbar @[maximumValue]
+    ]
+
+    loop: method [coll, prm, blk][
+        do \executeIterator 'loop
+    ]
+
+    map: method [coll, prm, blk][
+        do \executeIterator 'map
+    ]
+    
+    select: method [coll, prm, blk][
+        do \executeIterator 'select
+    ]
+
+    filter: method [coll, prm, blk][
+        do \executeIterator 'filter
+    ]
+]
+
+;---------------------------
+; Let's create 
+; a singleton
+;---------------------------
+
+progressive: to :progressive []!
+
+;---------------------------
+; Testing
+;---------------------------
+
+if standalone? ::
+
+    progressive\loop.plain repeat list "." 30 'x [
+        processing x
+        pause 200
+    ]
