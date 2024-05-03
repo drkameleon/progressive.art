@@ -106,7 +106,7 @@ progressive: to :progressive []!
 ;---------------------------
 
 if standalone? [
-    progressive\loop.persist repeat list "." 5 'x [
+    progressive\loop.counter repeat list "." 5 'x [
         processing extract.basename x
         pause 100
     ]
