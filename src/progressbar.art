@@ -13,18 +13,30 @@
 
 define :progressbar [
     ;---------------------------
+    ; Style templates
+    ;---------------------------
+
+    defaultStyle:   to :block read ./"styles/default.art"
+    plainStyle:     to :block read ./"styles/plain.art"
+    fancyStyle:     to :block read ./"styles/fancy.art"
+
+    ;---------------------------
     ; Constructor
     ;---------------------------
 
     init: method [maxValue :integer][
+        ; initialize values
         \current: 0
         \maxValue: maxValue
-
         \run: 0
-        \animations: ["-", "\\", "|", "/", "-", "\\", "|", "/"]
-        \animated?: not? null? attr 'animated
+        
+        do \defaultStyle
+
+        \animations: to [:string] split "┤┘┴└├┌┬┐"
+        \animated?: null? attr 'noSpinner
         \hasDetails?: null? attr 'noDetails
         \hasBar?: null? attr 'noBar
+        \hasRatio?: null? attr 'noRatio
 
         \label: (lbl: <= attr 'label)? -> lbl -> "Downloading:"
         \processing: ""
@@ -35,19 +47,21 @@ define :progressbar [
         \onColor: (onc: <= attr 'onColor)? -> onc -> #white
         \offMark: (offm: <= attr 'offMark)? -> offm -> "░"
         \offColor: (offc: <= attr 'offColor)? -> offc -> #white
-        \persistent?: not? null? attr 'persistent
+        \labelColor: (lac: <= attr 'labelColor)? -> lac -> #white
+        \persistent?: null? attr 'minimize
         \width: (wdt: <= attr 'width)? -> wdt -> 0
 
+        if not? null? attr 'plain -> do \plainStyle
+        if not? null? attr 'fancy -> do \fancyStyle
+
+        \animationSize: \animated? ? -> size first \animations
+                                     -> 0
+
+        ; let's start
         \startTime: to :integer now
         \active?: true
 
-        if not? null? attr 'plain [
-            \onMark: "="
-            \offMark: " "
-            \barBefore: "["
-            \barAfter: "]"
-        ]
-
+        ; hide the cursor
         cursor false
     ]
 
@@ -95,38 +109,46 @@ define :progressbar [
         prints (not? \hasDetails?)? -> "" [
             currentlyProcessed: ""
             if not? empty? \processing ->
-                currentlyProcessed: ~"➔ |\processing|"
-            dtlText: ~{|\current|/|\maxValue| |currentlyProcessed|}
+                currentlyProcessed: (\hasRatio? ? -> "➔ " -> "") ++ \processing
+
+            dtlText: (\hasRatio?)? -> ~{|\current|/|\maxValue| |currentlyProcessed|}
+                                   -> ~{|currentlyProcessed|}
+
             timeUpToNow: (to :integer now) - \startTime
             remaining: ((\maxValue - \current) * timeUpToNow) / \current
             remaining: (\friendlyTime remaining) ++ " left"
             (not? \hasBar?)? 
                 [
                     pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
-                    (repeat " " (\animated? ? -> 2 -> 0) + 1) ++ \label ++ " " ++ color #gray dtlText ++ (pad.left remaining \lineWidth - sum @[2 + size \label, size dtlText, (\animated? ? -> 2 -> 0), 8]) ++ " " ++ color #green pcent
+                    (repeat " " (\animated? ? -> inc \animationSize -> 0) + 1) ++ \label ++ " " ++ color #gray dtlText ++ (pad.left remaining \lineWidth - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8]) ++ " " ++ color #green pcent
                 ]
-                -> (repeat " " (\animated? ? -> 2 -> 0) + 2 + size \label) ++ color #gray dtlText ++ (pad.left remaining \lineWidth - sum @[2 + size \label, size dtlText, (\animated? ? -> 2 -> 0), 8]) ++ repeat " " 8
+                -> (repeat " " (\animated? ? -> inc \animationSize -> 0) + 2 + (size \label) + size \barBefore) ++ color #gray dtlText ++ (pad.left remaining \lineWidth - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8, size \barBefore, size \barAfter]) ++ repeat " " 8 + size \barAfter
+        ]
+    ]
+
+    showFinalDetails: method [][
+        prints (not? \hasDetails?)? -> "" [
+            " " ++ (color #gray pad.left "Completed in " ++ replace \friendlyTime (to :integer now) - \startTime "~ " "" \lineWidth - sum @[(size \label) - 3, size \barAfter]) ++ repeat " " 8 + size \barAfter
         ]
     ]
 
     showBarLine: method [][
         (not? \hasBar?)? -> prints "" [
             pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
-            spaceAvailable: \lineWidth - sum @[inc size \label, size pcent, 3, \animated? ? -> 2 -> 0, size \barBefore, size \barAfter]
+            spaceAvailable: \lineWidth - sum @[inc size \label, size pcent, 3, \animated? ? -> inc \animationSize -> 0, size \barBefore, size \barAfter]
 
             ons: (\current * spaceAvailable) / \maxValue
             offs: spaceAvailable - ons
 
-            bar: \barBefore ++ (\colored \onColor repeat \onMark ons) ++ (\colored \offColor repeat \offMark offs) ++ \barAfter
+            bar: (color \labelColor \barBefore) ++ (\colored \onColor repeat \onMark ons) ++ (\colored \offColor repeat \offMark offs) ++ (color \labelColor \barAfter)
 
-            pr: \animations\[\run % 8]
-            prints [(\animated? ? -> " " ++ pr -> "") ++ " " ++ color.bold #white \label bar color #green pcent]
+            pr: \animations\[\run % size \animations]
+            prints [(\animated? ? -> " " ++ pr -> "") ++ " " ++ color.bold \labelColor \label bar color #green pcent]
         ]
     ]
 
     showFinalLine: method [][
-        prints " " ++ (color.bold #white \label) ++ " " ++ "Completed in " ++ (\friendlyTime (to :integer now) - \startTime) ++ " " ++ color #green "✔"
-        ;print \friendlyTime (to :integer now) - \startTime
+        prints " " ++ (color.bold #white \label) ++ " " ++ "Completed in " ++ (replace \friendlyTime (to :integer now) - \startTime "~ " "") ++ " " ++ color #green "✔"
     ]
 
     ;---------------------------
@@ -148,12 +170,16 @@ define :progressbar [
     ]
 
     stop: method [][
-        if not? \persistent? [
-            \goBack
-            \cleanUp
-            \goBack
+        \goBack
+        \cleanUp
+        \goBack
+        (and? \persistent? \hasBar?)?[
+            \showFinalDetails
+            \showBarLine
+        ][
             \showFinalLine
         ]
+        \active?: false
         print ""
         cursor true
     ]

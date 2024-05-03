@@ -14,6 +14,7 @@
 import ./"progressbar"!
 
 define :progressive [
+
     ;---------------------------
     ; Templates
     ;---------------------------
@@ -94,8 +95,8 @@ define :progressive [
 ]
 
 ;---------------------------
-; Let's create 
-; a singleton
+; The main access point
+; = a singleton!
 ;---------------------------
 
 progressive: to :progressive []!
@@ -104,9 +105,30 @@ progressive: to :progressive []!
 ; Testing
 ;---------------------------
 
-if standalone? ::
-
-    progressive\loop repeat list "." 3 'x [
-        processing x
+if standalone? [
+    progressive\loop repeat list "." 5 'x [
+        processing extract.basename x
         pause 200
     ]
+
+    progressive\loop.plain repeat list "." 5 'x [
+        processing extract.basename x
+        pause 200
+    ]
+
+    progressive\loop.fancy repeat list "." 5 'x [
+        processing extract.basename x
+        pause 200
+    ]
+
+    progressive\loop.noDetails repeat list "." 5 'x [
+        processing extract.basename x
+        pause 200
+    ]
+
+    progressive\loop.noBar.animated repeat list "." 5 'x [
+        processing extract.basename x
+        pause 200
+    ]
+]
+
