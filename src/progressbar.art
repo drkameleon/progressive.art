@@ -89,6 +89,19 @@ define :progressbar [
                         -> color col str
     ]
 
+    friendlyTime: function [num][
+        if num = 0      -> return "< 1s"
+        if num < 60     -> return ~"~ |num|s"
+        if num = 60     -> return "< 1min"
+        if num < 60*60  -> return ~"~ |num / 60|min |num % 60|s"
+        if num = 60*60  -> return "< 1h"
+        
+        [hours,rest]    : divmod num 60*60
+        [mins,secs]     : divmod rest 60 
+
+        return ~"~ |hours|h |mins|min |secs|s"
+    ]
+
     ;---------------------------
     ; Private methods
     ;---------------------------
@@ -103,19 +116,6 @@ define :progressbar [
         \goBack
     ]
 
-    friendlyTime: method [num][
-        if num = 0      -> return "< 1s"
-        if num < 60     -> return ~"~ |num|s"
-        if num = 60     -> return "< 1min"
-        if num < 60*60  -> return ~"~ |num / 60|min |num % 60|s"
-        if num = 60*60  -> return "< 1h"
-        
-        [hours,rest]    : divmod num 60*60
-        [mins,secs]     : divmod rest 60 
-
-        return ~"~ |hours|h |mins|min |secs|s"
-    ]
-
     timeLeft: method [][
         timeUpToNow: (to :integer now) - \startTime
         remaining: div (\maxValue - \current) * timeUpToNow \current
@@ -124,7 +124,11 @@ define :progressbar [
 
     timeTaken: method [][
         timeUpToNow: (to :integer now) - \startTime
-        return \neat ["Completed in", replace \friendlyTime timeUpToNow "~" ""]
+        return \neat ["Completed in", replace \friendlyTime timeUpToNow "~ " ""]
+    ]
+
+    percentage: method [][
+        pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
     ]
 
     detailLine: method [][
@@ -138,10 +142,7 @@ define :progressbar [
                                -> currentlyProcessing
 
         (not? \hasBar?)? 
-            [
-                pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
-                (\space (\animated? ? -> inc \animationSize -> 0) + 1) ++ \label ++ " " ++ color \detailColor dtlText ++ (pad.left \timeLeft \width - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8]) ++ " " ++ color #green pcent
-            ]
+            -> (\space (\animated? ? -> inc \animationSize -> 0) + 1) ++ \label ++ " " ++ color \detailColor dtlText ++ (pad.left \timeLeft \width - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8]) ++ " " ++ color #green \percentage
             -> (\space (\animated? ? -> inc \animationSize -> 0) + 2 + (size \label) + size \barBefore) ++ color \detailColor dtlText ++ (pad.left \timeLeft \width - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8, size \barBefore, size \barAfter]) ++ \space 8 + size \barAfter
     ]
 
@@ -154,7 +155,7 @@ define :progressbar [
     barLine: method [][
         if not? \hasBar? -> return ""
 
-        pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
+        pcent: \percentage
         spaceAvailable: \width - sum @[inc size \label, size pcent, 3, \animated? ? -> inc \animationSize -> 0, size \barBefore, size \barAfter]
 
         ons: (\current * spaceAvailable) / \maxValue
