@@ -3,3 +3,8 @@
 \barBefore: ""
 \barAfter: ""
 \animations: ["┤","┘","┴","└","├","┌","┬","┐"]
+
+\onColor: #white
+\offColor: #white
+\labelColor: #white
+\detailColor: #gray

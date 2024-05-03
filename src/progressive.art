@@ -74,7 +74,7 @@ define :progressive [
     ;---------------------------
 
     new: method [maximumValue :integer][
-        return to :progressbar @[maximumValue]
+        to :progressbar @[maximumValue]
     ]
 
     loop: method [coll, prm, blk][
@@ -121,12 +121,12 @@ if standalone? [
         pause 200
     ]
 
-    progressive\loop.noDetails repeat list "." 5 'x [
+    progressive\loop.simple repeat list "." 5 'x [
         processing extract.basename x
         pause 200
     ]
 
-    progressive\loop.noBar.animated repeat list "." 5 'x [
+    progressive\loop.barless.animated repeat list "." 5 'x [
         processing extract.basename x
         pause 200
     ]

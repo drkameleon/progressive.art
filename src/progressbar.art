@@ -29,30 +29,33 @@ define :progressbar [
         \current: 0
         \maxValue: maxValue
         \run: 0
-        
+
+        ; initialize settings
+        \label:         (lbl: <= attr 'label)? -> lbl -> "Downloading:"
+        \processing:    ""
+        \animated?:     true
+
+        ; initialize style
         do \defaultStyle
 
-        \animations: to [:string] split "┤┘┴└├┌┬┐"
-        \animated?: null? attr 'noSpinner
-        \hasDetails?: null? attr 'noDetails
-        \hasBar?: null? attr 'noBar
-        \hasRatio?: null? attr 'noRatio
+        if attr 'plain -> do \plainStyle
+        if attr 'fancy -> do \fancyStyle
 
-        \label: (lbl: <= attr 'label)? -> lbl -> "Downloading:"
-        \processing: ""
+        if bab: <= attr 'barBefore      -> \barBefore:      bab
+        if baf: <= attr 'barAfter       -> \barAfter:       baf
+        if onm: <= attr 'onMark         -> \onMark:         onm
+        if onc: <= attr 'onColor        -> \onColor:        onc
+        if ofm: <= attr 'offMark        -> \offMark:        ofm
+        if ofc: <= attr 'offColor       -> \offColor:       ofc
+        if lac: <= attr 'labelColor     -> \labelColor:     lac
+        if dtc: <= attr 'detailColor    -> \detailColor:    dtc
 
-        \barBefore: (bab: <= attr 'barBefore)? -> bab -> ""
-        \barAfter: (baf: <= attr 'barAfter)? -> baf -> ""
-        \onMark: (onm: <= attr 'onMark)? -> onm -> "▓"
-        \onColor: (onc: <= attr 'onColor)? -> onc -> #white
-        \offMark: (offm: <= attr 'offMark)? -> offm -> "░"
-        \offColor: (offc: <= attr 'offColor)? -> offc -> #white
-        \labelColor: (lac: <= attr 'labelColor)? -> lac -> #white
-        \persistent?: null? attr 'minimize
-        \width: (wdt: <= attr 'width)? -> wdt -> 0
+        \animated?:     null? attr 'static
+        \hasBar?:       null? attr 'barless
+        \hasRatio?:     null? attr 'ratioless
 
-        if not? null? attr 'plain -> do \plainStyle
-        if not? null? attr 'fancy -> do \fancyStyle
+        \hasDetails?:   null? attr 'simple
+        \persistent?:   null? attr 'minimize
 
         \animationSize: \animated? ? -> size first \animations
                                      -> 0
@@ -69,6 +72,14 @@ define :progressbar [
     ; Helpers
     ;---------------------------
 
+    width: function [][
+       terminal\width
+    ]
+
+    space: function [spacelen][
+        repeat " " spacelen
+    ]
+
     colored: function [col, str][
         (col = #white)? -> str
                         -> color col str
@@ -78,30 +89,26 @@ define :progressbar [
     ; Private methods
     ;---------------------------
 
-    lineWidth: method [][
-        (\width = 0)? -> terminal\width
-                      -> \width
-    ]
-
     goBack: method [][
-        prints repeat "\b" \lineWidth * enumerate @[\hasDetails? \hasBar?] => [&]
+        prints repeat "\b" \width * enumerate @[\hasDetails? \hasBar?] => [&]
     ]
 
     cleanUp: method [][
-        prints repeat " " \lineWidth * enumerate @[\hasDetails? \hasBar?] => [&]
+        \goBack
+        prints \space \width * enumerate @[\hasDetails? \hasBar?] => [&]
+        \goBack
     ]
 
     friendlyTime: method [num][
-        if num = 0 -> return "< 1s"
-        if num < 60 -> return ~"~ |num|s"
-        if num = 60 -> return "< 1min"
-        if num < 60*60 -> return ~"~ |num / 60|min |num % 60|s"
-        if num = 60*60 -> return "< 1h"
+        if num = 0      -> return "< 1s"
+        if num < 60     -> return ~"~ |num|s"
+        if num = 60     -> return "< 1min"
+        if num < 60*60  -> return ~"~ |num / 60|min |num % 60|s"
+        if num = 60*60  -> return "< 1h"
         
-        hours: num / 60*60
-        rest: num % 60*60
-        mins: rest / 60
-        secs: rest % 60
+        [hours,rest]    : divmod num 60*60
+        [mins,secs]     : divmod rest 60 
+
         return ~"~ |hours|h |mins|min |secs|s"
     ]
 
@@ -120,22 +127,22 @@ define :progressbar [
             (not? \hasBar?)? 
                 [
                     pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
-                    (repeat " " (\animated? ? -> inc \animationSize -> 0) + 1) ++ \label ++ " " ++ color #gray dtlText ++ (pad.left remaining \lineWidth - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8]) ++ " " ++ color #green pcent
+                    (\space (\animated? ? -> inc \animationSize -> 0) + 1) ++ \label ++ " " ++ color \detailColor dtlText ++ (pad.left remaining \width - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8]) ++ " " ++ color #green pcent
                 ]
-                -> (repeat " " (\animated? ? -> inc \animationSize -> 0) + 2 + (size \label) + size \barBefore) ++ color #gray dtlText ++ (pad.left remaining \lineWidth - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8, size \barBefore, size \barAfter]) ++ repeat " " 8 + size \barAfter
+                -> (\space (\animated? ? -> inc \animationSize -> 0) + 2 + (size \label) + size \barBefore) ++ color \detailColor dtlText ++ (pad.left remaining \width - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8, size \barBefore, size \barAfter]) ++ \space 8 + size \barAfter
         ]
     ]
 
     showFinalDetails: method [][
         prints (not? \hasDetails?)? -> "" [
-            " " ++ (color #gray pad.left "Completed in " ++ replace \friendlyTime (to :integer now) - \startTime "~ " "" \lineWidth - sum @[(size \label) - 3, size \barAfter]) ++ repeat " " 8 + size \barAfter
+            " " ++ (color \detailColor pad.left "Completed in " ++ replace \friendlyTime (to :integer now) - \startTime "~ " "" \width - sum @[(size \label) - 3, size \barAfter]) ++ \space 8 + size \barAfter
         ]
     ]
 
     showBarLine: method [][
         (not? \hasBar?)? -> prints "" [
             pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
-            spaceAvailable: \lineWidth - sum @[inc size \label, size pcent, 3, \animated? ? -> inc \animationSize -> 0, size \barBefore, size \barAfter]
+            spaceAvailable: \width - sum @[inc size \label, size pcent, 3, \animated? ? -> inc \animationSize -> 0, size \barBefore, size \barAfter]
 
             ons: (\current * spaceAvailable) / \maxValue
             offs: spaceAvailable - ons
@@ -170,9 +177,7 @@ define :progressbar [
     ]
 
     stop: method [][
-        \goBack
         \cleanUp
-        \goBack
         (and? \persistent? \hasBar?)?[
             \showFinalDetails
             \showBarLine
