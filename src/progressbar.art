@@ -79,6 +79,10 @@ define :progressbar [
     space: function [spacelen][
         repeat " " spacelen
     ]
+    
+    neat: function [strblk][
+        join.with:" " @ strblk
+    ]
 
     colored: function [col, str][
         (col = #white)? -> str
@@ -112,46 +116,54 @@ define :progressbar [
         return ~"~ |hours|h |mins|min |secs|s"
     ]
 
-    showDetailLine: method [][
-        prints (not? \hasDetails?)? -> "" [
-            currentlyProcessed: ""
-            if not? empty? \processing ->
-                currentlyProcessed: (\hasRatio? ? -> "➔ " -> "") ++ \processing
+    timeLeft: method [][
+        timeUpToNow: (to :integer now) - \startTime
+        remaining: div (\maxValue - \current) * timeUpToNow \current
+        return \neat [\friendlyTime remaining, "left"]
+    ]
 
-            dtlText: (\hasRatio?)? -> ~{|\current|/|\maxValue| |currentlyProcessed|}
-                                   -> ~{|currentlyProcessed|}
+    timeTaken: method [][
+        timeUpToNow: (to :integer now) - \startTime
+        return \neat ["Completed in", replace \friendlyTime timeUpToNow "~" ""]
+    ]
 
-            timeUpToNow: (to :integer now) - \startTime
-            remaining: ((\maxValue - \current) * timeUpToNow) / \current
-            remaining: (\friendlyTime remaining) ++ " left"
-            (not? \hasBar?)? 
-                [
-                    pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
-                    (\space (\animated? ? -> inc \animationSize -> 0) + 1) ++ \label ++ " " ++ color \detailColor dtlText ++ (pad.left remaining \width - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8]) ++ " " ++ color #green pcent
-                ]
-                -> (\space (\animated? ? -> inc \animationSize -> 0) + 2 + (size \label) + size \barBefore) ++ color \detailColor dtlText ++ (pad.left remaining \width - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8, size \barBefore, size \barAfter]) ++ \space 8 + size \barAfter
-        ]
+    detailLine: method [][
+        if not? \hasDetails? -> return ""
+
+        currentlyProcessing: ""
+        if not? empty? \processing ->
+            currentlyProcessing: (\hasRatio? ? -> "➔ " -> "") ++ \processing
+
+        dtlText: (\hasRatio?)? -> \neat [~{|\current|/|\maxValue|} currentlyProcessing]
+                               -> currentlyProcessing
+
+        (not? \hasBar?)? 
+            [
+                pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
+                (\space (\animated? ? -> inc \animationSize -> 0) + 1) ++ \label ++ " " ++ color \detailColor dtlText ++ (pad.left \timeLeft \width - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8]) ++ " " ++ color #green pcent
+            ]
+            -> (\space (\animated? ? -> inc \animationSize -> 0) + 2 + (size \label) + size \barBefore) ++ color \detailColor dtlText ++ (pad.left \timeLeft \width - sum @[2 + size \label, size dtlText, (\animated? ? -> inc \animationSize -> 0), 8, size \barBefore, size \barAfter]) ++ \space 8 + size \barAfter
     ]
 
     showFinalDetails: method [][
         prints (not? \hasDetails?)? -> "" [
-            " " ++ (color \detailColor pad.left "Completed in " ++ replace \friendlyTime (to :integer now) - \startTime "~ " "" \width - sum @[(size \label) - 3, size \barAfter]) ++ \space 8 + size \barAfter
+            " " ++ (color \detailColor pad.left \timeTaken \width - sum @[(size \label) - 3, size \barAfter]) ++ \space 8 + size \barAfter
         ]
     ]
 
-    showBarLine: method [][
-        (not? \hasBar?)? -> prints "" [
-            pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
-            spaceAvailable: \width - sum @[inc size \label, size pcent, 3, \animated? ? -> inc \animationSize -> 0, size \barBefore, size \barAfter]
+    barLine: method [][
+        if not? \hasBar? -> return ""
 
-            ons: (\current * spaceAvailable) / \maxValue
-            offs: spaceAvailable - ons
+        pcent: pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" 6
+        spaceAvailable: \width - sum @[inc size \label, size pcent, 3, \animated? ? -> inc \animationSize -> 0, size \barBefore, size \barAfter]
 
-            bar: (color \labelColor \barBefore) ++ (\colored \onColor repeat \onMark ons) ++ (\colored \offColor repeat \offMark offs) ++ (color \labelColor \barAfter)
+        ons: (\current * spaceAvailable) / \maxValue
+        offs: spaceAvailable - ons
 
-            pr: \animations\[\run % size \animations]
-            prints [(\animated? ? -> " " ++ pr -> "") ++ " " ++ color.bold \labelColor \label bar color #green pcent]
-        ]
+        bar: (color \labelColor \barBefore) ++ (\colored \onColor repeat \onMark ons) ++ (\colored \offColor repeat \offMark offs) ++ (color \labelColor \barAfter)
+
+        pr: \animations\[\run % size \animations]
+        return join.with:" " @[(\animated? ? -> " " ++ pr -> "") ++ " " ++ color.bold \labelColor \label bar color #green pcent]
     ]
 
     showFinalLine: method [][
@@ -167,8 +179,8 @@ define :progressbar [
         if \animated? -> \run: \run + 1
 
         \goBack
-        \showDetailLine
-        \showBarLine
+        prints \detailLine
+        prints \barLine
 
         if \current >= \maxValue [
             \active?: false
@@ -180,7 +192,7 @@ define :progressbar [
         \cleanUp
         (and? \persistent? \hasBar?)?[
             \showFinalDetails
-            \showBarLine
+            prints \barLine
         ][
             \showFinalLine
         ]
