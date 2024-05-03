@@ -3,6 +3,7 @@
 \barBefore: ""
 \barAfter: ""
 \animations: ["┤","┘","┴","└","├","┌","┬","┐"]
+\checkMark: "✔"
 
 \onColor: #white
 \offColor: #white
