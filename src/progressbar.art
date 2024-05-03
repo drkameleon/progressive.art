@@ -58,7 +58,7 @@ define :progressbar [
         \hasRatio?:     null? attr 'ratioless
 
         \hasDetails?:   null? attr 'simple
-        \persistent?:   not? null? attr 'persist
+        \persistent?:   not? null? attr 'keep
         \hide?:         not? null? attr 'hide
 
         \animationSize:     \animated? ? -> inc size first \animations
