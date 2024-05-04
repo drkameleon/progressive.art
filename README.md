@@ -85,7 +85,7 @@ Progressive comes with *lots* of different options so that you are able to custo
 #### Styles
 
 | Option | Description |
-|----|----|----|
+|----|----|
 | .plain | plain style using only ASCII characters | 
 | .fancy | a "fancy" progress bar | 
 
@@ -107,7 +107,7 @@ Progressive comes with *lots* of different options so that you are able to custo
 | .label | :string | set the main label | `"Progress:"` | 
 | .labelColor | :color | set the main label color | `#white` |
 | .detailColor | :color | set the color for the details | `#gray` |
- 
+
 
 
 > [!TIP]
