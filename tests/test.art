@@ -1,0 +1,30 @@
+import ./{../src/progressive}!
+
+progressiveWithOptions: function [opts][
+    print [color #magenta " > Progressive / with options:" as.code opts "\n"]
+    do [progressive\loop] ++ opts ++ [
+        repeat list "." 5 'x [
+            processing extract.basename x
+            pause 100
+        ]
+        print ""
+    ]
+]
+
+loop [
+    []
+    [.plain]
+    [.fancy]
+    [.static]
+    [.keep]
+    [.keep.static]
+    [.simple]
+    [.simple.keep]
+    [.simple.static]
+    [.simple.keep.static]
+    [.counter]
+    [.counter.keep]
+    [.counter.static]
+    [.counter.keep.static]
+    [.hide]
+] => progressiveWithOptions

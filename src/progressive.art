@@ -100,15 +100,3 @@ define :progressive [
 ;---------------------------
 
 progressive: to :progressive []!
-
-;---------------------------
-; Testing
-;---------------------------
-
-if standalone? [
-    progressive\loop.plain.keep repeat list "." 10 'x [
-        processing extract.basename x
-        pause 100
-    ]
-]
-
