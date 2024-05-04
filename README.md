@@ -107,11 +107,20 @@ Progressive comes with *lots* of different options so that you are able to custo
 | .label | :string | set the main label | `"Progress:"` | 
 | .labelColor | :color | set the main label color | `#white` |
 | .detailColor | :color | set the color for the details | `#gray` |
-
-
+| .onMark | :string | set character for "active" progress bar portions | `"▓"` |
+| .onColor | :color | set color for "active" progress bar portions | `#white` |
+| .offMark | :string | set character for "inactive" progress bar portions | `"░"` |
+| .offColor | :color | set color for "inactive" progress bar portions | `#white` |
+| .headMark | :string | character for the "tip" of the progress bar | `""` |
+| .barBefore | :string | custom prefix, just before the progress bar | `""` |
+| .barAfter | :string | custome suffix, just after the progress bar | `""` |
+| .checkMark | :string | success icon | `"✔"` |
+| .checkColor | :color | color for the success icon | `#green` |
+| .percentColor | :color | color for the percentage | `#green` |
+| .animation | :block | characters to use for the spinner | `["┤","┘","┴","└","├","┌","┬","┐"]` |
 
 > [!TIP]
-> You may pass any combination of these options (and: that's a lot!) either to an iterator, or when creating a new custom progress bar. 
+> You may pass any combination of the options above (= that's a lot!) either to an iterator, or when creating a new custom progress bar. 
 > So, this:
 > ```arturo
 > progressive\loop .fancy .label:"Doing sth" ...
