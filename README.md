@@ -20,7 +20,9 @@
 * [How do I use it?](#how-do-i-use-it)
    - [With iterators](#with-iterators)
    - [Custom progress bars](#custom-progress-bar)
-* [Function Reference](#function-reference)
+* [Option Reference](#option-reference)
+   - [Styles](#styles)
+   - [More customization](#more-customization)
 * [License](#license)   
 
 <!--te-->
@@ -75,9 +77,24 @@ while [i < 20][
 ]
 ```
 
-### Option reference
+### Option Reference
 
 Progressive comes with *lots* of different options so that you are able to customize your progress bars to your heart's content!
+
+#### Styles
+
+| Option | Description |
+|----|----|
+| .plain | plain style using only ASCII characters | 
+| .fancy | a "fancy" progress bar | 
+
+#### More customization
+
+| Option | Description |
+|----|----|
+| .plain | plain style using only ASCII characters | 
+| .fancy | a "fancy" progress bar | 
+
 
 > [!TIP]
 > You may pass any combination of these options (and: that's a lot!) either to an iterator, or when creating a new custom progress bar. 
@@ -86,31 +103,6 @@ Progressive comes with *lots* of different options so that you are able to custo
 > progressive\loop .fancy .label:"Doing sth" ...
 > ```
 > ...is perfectly valid!
-
-#### `recase`
-
-##### Description
-
-convert case of given string
-
-##### Usage
-
-<pre>
-<b>recase</b> <ins>str</ins> <i>:string</i>
-</pre>
-
-##### Attributes
-
-| Option | Type(s) | Description |
-|----|----|----|
-| title |  | convert to TitleCase | 
-| camel |  | convert to camelCase | 
-| snake |  | convert to snake_case | 
-| kebab |  | convert to kebab-case | 
-
-##### Returns
-
-- *:string*
 
 <hr/>
 
