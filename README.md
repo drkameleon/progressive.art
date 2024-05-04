@@ -80,7 +80,12 @@ while [i < 20][
 Progressive comes with *lots* of different options so that you are able to customize your progress bars to your heart's content!
 
 > [!TIP]
-> You may pass any combination of these options (and: that's a lot!) either to an iterator, or when creating a new custom progress bar. So, `progressive\loop .fancy .label:"Doing sth" ...`? That's perfectly valid!
+> You may pass any combination of these options (and: that's a lot!) either to an iterator, or when creating a new custom progress bar. 
+> So, this:
+> ```arturo
+> progressive\loop .fancy .label:"Doing sth" ...
+> ```
+> ...is perfectly valid!
 
 #### `recase`
 
