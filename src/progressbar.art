@@ -19,6 +19,7 @@ define :progressbar [
     defaultStyle:   to :block read ./"styles/default.art"
     plainStyle:     to :block read ./"styles/plain.art"
     fancyStyle:     to :block read ./"styles/fancy.art"
+    gaugeStyle:     to :block read ./"styles/gauge.art"
 
     ;---------------------------
     ; Constructor
@@ -42,6 +43,7 @@ define :progressbar [
 
         if attr 'plain -> do \plainStyle
         if attr 'fancy -> do \fancyStyle
+        if attr 'gauge -> do \gaugeStyle
 
         if bab: <= attr 'barBefore      -> \barBefore:      bab
         if baf: <= attr 'barAfter       -> \barAfter:       baf
@@ -49,6 +51,7 @@ define :progressbar [
         if onc: <= attr 'onColor        -> \onColor:        onc
         if ofm: <= attr 'offMark        -> \offMark:        ofm
         if ofc: <= attr 'offColor       -> \offColor:       ofc
+        if hem: <= attr 'headMark       -> \headMark:       hem
         if lac: <= attr 'labelColor     -> \labelColor:     lac
         if dtc: <= attr 'detailColor    -> \detailColor:    dtc
         if ckm: <= attr 'checkMark      -> \checkMark:      ckm
@@ -188,7 +191,8 @@ define :progressbar [
 
         join @[
             color \labelColor \barBefore
-            \colored \onColor repeat \onMark ons
+            \colored \onColor repeat \onMark ons - (\active? ? -> size \headMark -> 0)
+            (\active? ? -> \colored \onColor \headMark -> "")
             \colored \offColor repeat \offMark offs
             color \labelColor \barAfter
         ]
