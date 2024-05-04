@@ -84,26 +84,30 @@ Progressive comes with *lots* of different options so that you are able to custo
 
 #### Styles
 
-| Option | Type | Description |
+| Option | Description |
 |----|----|----|
-| .plain | | plain style using only ASCII characters | 
-| .fancy | | a "fancy" progress bar | 
+| .plain | plain style using only ASCII characters | 
+| .fancy | a "fancy" progress bar | 
 
 #### Common options
 
-| Option | Type | Description |
-|----|----|----|
-| .label | :string | set the main label (default: `Progress:`) |
-| .labelColor | :color | set the main label color (default: `#white`) |
-| .detailColor | :color | set the color for the details, above the progress bar (default: `#gray`) | 
+| Option | Description |
+|----|----|
+| .simple | make details, above the progress bar, disappear |
+| .counter | counter mode (= don't show a progress bar) |
+| .static | don't show animated spinner
+| .ratioless | don't show progress as a ratio |
+| .keep | keep progress bar as-is after finishing, without minimizing |
+| .hide | hide progress bar completely, after finishing |
 
 #### More customization
 
-| Option | Type | Description |
-|----|----|----|
-| .label | :string | set the main label (default: `Progress:`) |
-| .labelColor | :color | set the main label color (default: `#white`) |
-| .detailColor | :color | set the color for the details, above the progress bar (default: `#gray`) | 
+| Option | Type | Description | Default |
+|----|----|----|----|
+| .label | :string | set the main label | `"Progress:"` | 
+| .labelColor | :color | set the main label color | `#white` |
+| .detailColor | :color | set the color for the details | `#gray` |
+ 
 
 
 > [!TIP]
