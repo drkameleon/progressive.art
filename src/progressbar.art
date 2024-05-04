@@ -139,7 +139,7 @@ define :progressbar [
     ]
 
     animation: method [][
-        unless \active? -> return color #green " " ++ \checkMark
+        if and? not? \active? \animated? -> return color #green " " ++ \checkMark
         \animated? ? -> " " ++ \animations\[\run % size \animations] 
                      -> ""
     ]
