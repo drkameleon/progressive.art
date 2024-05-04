@@ -43,6 +43,7 @@ define :progressbar [
         if attr 'plain -> do \plainStyle
         if attr 'fancy -> do \fancyStyle
 
+        if anm: <= attr 'animation      -> \animations:     anm
         if bab: <= attr 'barBefore      -> \barBefore:      bab
         if baf: <= attr 'barAfter       -> \barAfter:       baf
         if onm: <= attr 'onMark         -> \onMark:         onm
