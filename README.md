@@ -22,6 +22,7 @@
    - [Custom progress bars](#custom-progress-bar)
 * [Option Reference](#option-reference)
    - [Styles](#styles)
+   - [Common options](#common-options)
    - [More customization](#more-customization)
 * [License](#license)   
 
@@ -87,6 +88,14 @@ Progressive comes with *lots* of different options so that you are able to custo
 |----|----|----|
 | .plain | | plain style using only ASCII characters | 
 | .fancy | | a "fancy" progress bar | 
+
+#### Common options
+
+| Option | Type | Description |
+|----|----|----|
+| .label | :string | set the main label (default: `Progress:`) |
+| .labelColor | :color | set the main label color (default: `#white`) |
+| .detailColor | :color | set the color for the details, above the progress bar (default: `#gray`) | 
 
 #### More customization
 
