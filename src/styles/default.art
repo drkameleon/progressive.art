@@ -9,3 +9,5 @@
 \offColor: #white
 \labelColor: #white
 \detailColor: #gray
+\checkColor: #green
+\percentColor: #green

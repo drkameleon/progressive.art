@@ -52,6 +52,8 @@ define :progressbar [
         if lac: <= attr 'labelColor     -> \labelColor:     lac
         if dtc: <= attr 'detailColor    -> \detailColor:    dtc
         if ckm: <= attr 'checkMark      -> \checkMark:      ckm
+        if ckc: <= attr 'checkColor     -> \checkColor:     ckc
+        if pcc: <= attr 'percentColor   -> \percentColor:   pcc
 
         \animated?:     null? attr 'static
         \hasBar?:       null? attr 'counter
@@ -139,7 +141,7 @@ define :progressbar [
     ]
 
     animation: method [][
-        if and? not? \active? \animated? -> return color #green " " ++ \checkMark
+        if and? not? \active? \animated? -> return color \checkColor " " ++ \checkMark
         \animated? ? -> " " ++ \animations\[\run % size \animations] 
                      -> ""
     ]
@@ -159,7 +161,7 @@ define :progressbar [
                 \label
                 color \detailColor dtlText
                 pad.left \timeLeft \width - sum @[2 + size \label, size dtlText, \animationSize, 8]
-                color #green \percentage
+                color \percentColor \percentage
             ]
             -> \neat [
                 \space \animationSize + 1 + (size \label) + size \barBefore
@@ -199,7 +201,7 @@ define :progressbar [
             \animation
             color.bold \labelColor \label
             \bar
-            color #green \percentage
+            color \percentColor \percentage
         ]
     ]
 
@@ -223,7 +225,7 @@ define :progressbar [
             rotate @[
                 color.bold \labelColor \label
                 \timeTaken
-                color #green \checkMark
+                color \checkColor \checkMark
             ] \animated? ? -> 2 -> 0
     ]
 
