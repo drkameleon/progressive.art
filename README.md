@@ -31,17 +31,24 @@ This package introduces ultra-customizeable terminal-based progress bars for Art
 
 ### How do I use it?
 
-Simply `import` it and use the included `recase` function:
+First `import` it and then... let's decide how you want to use it.
+
+Do you want to use it along with an existing iterator? That's very easy:
 
 ```arturo
-import "recase"!
+import "progressive"!
 
-recase.snake "This is an example"
-; => "this_is_an_example"
-
-recase.camel "Print SQL"
-; => "printSQL"
+progressive\loop 1..20 'x [
+    pause 200
+]
 ```
+
+> [!IMPORTANT]
+> Right now, Progressive supports the following Iterator "overloads":
+> - [loop](https://arturo-lang.io/documentation/library/iterators/loop/)
+> - [map](https://arturo-lang.io/documentation/library/iterators/map/)
+> - [select](https://arturo-lang.io/documentation/library/iterators/select/)
+> - [filter](https://arturo-lang.io/documentation/library/iterators/filter/)
 
 ### Function reference
 
