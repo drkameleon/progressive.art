@@ -106,29 +106,9 @@ progressive: to :progressive []!
 ;---------------------------
 
 if standalone? [
-    progressive\loop.counter repeat list "." 5 'x [
+    progressive\loop.plain.keep repeat list "." 10 'x [
         processing extract.basename x
         pause 100
     ]
-
-    ; progressive\loop.plain repeat list "." 5 'x [
-    ;     processing extract.basename x
-    ;     pause 200
-    ; ]
-
-    ; progressive\loop.fancy repeat list "." 5 'x [
-    ;     processing extract.basename x
-    ;     pause 200
-    ; ]
-
-    ; progressive\loop.simple repeat list "." 5 'x [
-    ;     processing extract.basename x
-    ;     pause 200
-    ; ]
-
-    ; progressive\loop.barless.animated repeat list "." 5 'x [
-    ;     processing extract.basename x
-    ;     pause 200
-    ; ]
 ]
 
