@@ -18,6 +18,8 @@
 
 * [What does this package do?](#what-does-this-package-do)
 * [How do I use it?](#how-do-i-use-it)
+   - "Overloaded" iterators(#with-overloaded-iterators)
+   - Custom progress bars(#custom-progress-bar)
 * [Function Reference](#function-reference)
 * [License](#license)   
 
@@ -33,6 +35,7 @@ This package introduces ultra-customizeable terminal-based progress bars for Art
 
 First `import` it and then... let's decide how you want to use it.
 
+#### "Overloaded" iterators
 Do you want to use it along with an existing iterator? That's very easy:
 
 ```arturo
@@ -49,6 +52,24 @@ progressive\loop 1..20 'x [
 > - [map](https://arturo-lang.io/documentation/library/iterators/map/)
 > - [select](https://arturo-lang.io/documentation/library/iterators/select/)
 > - [filter](https://arturo-lang.io/documentation/library/iterators/filter/)
+
+#### Custom progress bars
+
+If you want to create a progress bar object and manipulate it yourself, that's possible too:
+
+```arturo
+import "progressive"!
+
+i: 0
+limit: 20
+progress: progressive\new limit!
+
+while [i < 20][
+    progress\increase 1
+    pause 200
+    i: i + 1
+]
+```
 
 ### Function reference
 
