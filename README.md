@@ -83,15 +83,15 @@ Progressive comes with *lots* of different options so that you are able to custo
 
 #### Styles
 
-| Option | Description |
-|----|----|
-| .plain | plain style using only ASCII characters | 
-| .fancy | a "fancy" progress bar | 
+| Option | Type | Description |
+|----|----|----|
+| .plain | | plain style using only ASCII characters | 
+| .fancy | | a "fancy" progress bar | 
 
 #### More customization
 
-| Option | Description |
-|----|----|
+| Option | Type | Description |
+|----|----|----|
 | .plain | plain style using only ASCII characters | 
 | .fancy | a "fancy" progress bar | 
 
