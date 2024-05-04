@@ -204,15 +204,18 @@ define :progressbar [
     ]
 
     finalComplete: method [][
-        if not? \hasDetails? -> return ""
-        (color \detailColor pad.left \timeTaken (sum @[
-            \animationSize
-            inc size \label
-            size \barBefore
-            1
-        ]) + \barSize) ++ 
-        (\space 2 + \percentageSize + size \barAfter) ++ 
-        \barLine
+        (\hasDetails? ? 
+            -> (
+                (color \detailColor pad.left \timeTaken (sum @[
+                    \animationSize
+                    inc size \label
+                    size \barBefore
+                    1
+                ]) + \barSize) ++ 
+                (\space 2 + \percentageSize + size \barAfter)
+            ) 
+            -> ""
+        ) ++ \barLine
     ]
 
     finalMinimalist: method [][
