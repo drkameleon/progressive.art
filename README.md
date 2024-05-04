@@ -92,8 +92,9 @@ Progressive comes with *lots* of different options so that you are able to custo
 
 | Option | Type | Description |
 |----|----|----|
-| .plain | plain style using only ASCII characters | 
-| .fancy | a "fancy" progress bar | 
+| .label | :string | set the main label (default: `Progress:`) |
+| .labelColor | :color | set the main label color (default: `#white`) |
+| .detailColor | :color | set the color for the details, above the progress bar (default: `#gray`) | 
 
 
 > [!TIP]
