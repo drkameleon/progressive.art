@@ -42,6 +42,7 @@ Do you want to use it along with an existing iterator? That's very easy:
 import "progressive"!
 
 progressive\loop 1..20 'x [
+    processing ~"Current num: |x|"
     pause 200
 ]
 ```
@@ -52,6 +53,9 @@ progressive\loop 1..20 'x [
 > - [map](https://arturo-lang.io/documentation/library/iterators/map/)
 > - [select](https://arturo-lang.io/documentation/library/iterators/select/)
 > - [filter](https://arturo-lang.io/documentation/library/iterators/filter/)
+
+> [!TIP]
+> By calling the magic function `processing` from inside a progressive iterator, you may pass information which will be displayed above the progress bar (as in: "what is currently being processed?")
 
 #### Custom progress bars
 
@@ -71,7 +75,12 @@ while [i < 20][
 ]
 ```
 
-### Function reference
+### Option reference
+
+Progressive comes with *lots* of different options so that you are able to customize your progress bars to your heart's content!
+
+> [!TIP]
+> You may pass any combination of these options (and: that's a lot!) either to an iterator, or when creating a new custom progress bar. So, `progressive\loop .fancy .label:"Doing sth" ...`? That's perfectly valid!
 
 #### `recase`
 
