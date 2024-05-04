@@ -18,8 +18,8 @@
 
 * [What does this package do?](#what-does-this-package-do)
 * [How do I use it?](#how-do-i-use-it)
-   - "Overloaded" iterators(#with-overloaded-iterators)
-   - Custom progress bars(#custom-progress-bar)
+   - [With iterators](#with-iterators)
+   - [Custom progress bars](#custom-progress-bar)
 * [Function Reference](#function-reference)
 * [License](#license)   
 
@@ -35,7 +35,7 @@ This package introduces ultra-customizeable terminal-based progress bars for Art
 
 First `import` it and then... let's decide how you want to use it.
 
-#### "Overloaded" iterators
+#### With iterators
 Do you want to use it along with an existing iterator? That's very easy:
 
 ```arturo
