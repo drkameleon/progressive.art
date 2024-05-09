@@ -99,6 +99,7 @@ define :progressbar [
     ]
 
     friendlyTime: function [num][
+        if null? num    -> return "?"
         if num = 0      -> return "< 1s"
         if num < 60     -> return ~"~ |num|s"
         if num = 60     -> return "< 1min"
@@ -127,7 +128,8 @@ define :progressbar [
 
     timeLeft: method [][
         timeUpToNow: (to :integer now) - \startTime
-        remaining: div (\maxValue - \current) * timeUpToNow \current
+        remaining: (zero? \current)? -> ø
+                                     -> div (\maxValue - \current) * timeUpToNow \current
         return \neat [
             \friendlyTime remaining
             \timeLeftLabel
