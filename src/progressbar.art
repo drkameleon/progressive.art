@@ -32,6 +32,7 @@ define :progressbar [
 
         ; initialize settings
         \label:             (lbl: <= attr 'label)?          -> lbl -> "Progress:"
+        \message:           (msg: <= attr 'message)?        -> msg -> ""
         \timeLeftLabel:     (tll: <= attr 'timeLeftLabel)?  -> tll -> "left"
         \timeTakenLabel:    (ttl: <= attr 'timeTakenLabel)? -> ttl -> "Completed in"
         \processing:        ""
@@ -217,12 +218,14 @@ define :progressbar [
     finalComplete: method [][
         (\hasDetails? ? 
             -> (
-                (color \detailColor pad.left \timeTaken (sum @[
+                (\space sum @[
                     \animationSize
                     inc size \label
                     size \barBefore
                     1
-                ]) + \barSize) ++ 
+                ]) ++
+                (color \detailColor \message) ++
+                (color \detailColor pad.left \timeTaken \barSize - size \message) ++
                 (\space 2 + \percentageSize + size \barAfter)
             ) 
             -> ""
