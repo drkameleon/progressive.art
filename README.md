@@ -105,6 +105,7 @@ Progressive comes with *lots* of different options so that you are able to custo
 | Option | Type | Description | Default |
 |----|----|----|----|
 | .label | :string | set the main label | `"Progress:"` | 
+| .message | :string | set a final message to appear as information | `""` |
 | .labelColor | :color | set the main label color | `#white` |
 | .detailColor | :color | set the color for the details | `#gray` |
 | .onMark | :string | set character for "active" progress bar portions | `"▓"` |
