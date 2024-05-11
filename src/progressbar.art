@@ -147,7 +147,7 @@ define :progressbar [
     ]
 
     animation: method [][
-        if and? not? \active? \animated? -> return color \checkColor " " ++ \checkMark
+        if and? not? \active? \animated? -> return \colored \checkColor " " ++ \checkMark
         \animated? ? -> " " ++ \animations\[\run % size \animations] 
                      -> ""
     ]
@@ -165,13 +165,13 @@ define :progressbar [
             -> \neat [
                 \animation
                 \label
-                color \detailColor dtlText
+                \colored \detailColor dtlText
                 pad.left \timeLeft \width - sum @[2 + size \label, size dtlText, \animationSize, 8]
-                color \percentColor \percentage
+                \colored \percentColor \percentage
             ]
             -> \neat [
                 \space \animationSize + 1 + (size \label) + size \barBefore
-                color \detailColor dtlText
+                \colored \detailColor dtlText
                 pad.left \timeLeft \width - sum @[2 + size \label, size dtlText, \animationSize, \percentageSize + 1, size \barBefore, size \barAfter, 2]
                 \space 1 + \percentageSize + size \barAfter
             ]
@@ -197,11 +197,11 @@ define :progressbar [
         ; onBar: join map.with:'i  ons 'x -> color pal\[i] \onMark
 
         join @[
-            color \labelColor \barBefore
+            \colored \labelColor \barBefore
             \colored \onColor repeat \onMark ons - (\active? ? -> size \headMark -> 0)
             (\active? ? -> \colored \onColor \headMark -> "")
             \colored \offColor repeat \offMark offs
-            color \labelColor \barAfter
+            \colored \labelColor \barAfter
         ]
     ]
 
@@ -210,9 +210,9 @@ define :progressbar [
 
         return \neat [
             \animation
-            color.bold \labelColor \label
+            \colored.bold \labelColor \label
             \bar
-            color \percentColor \percentage
+            \colored \percentColor \percentage
         ]
     ]
 
@@ -225,8 +225,8 @@ define :progressbar [
                     size \barBefore
                     1
                 ]) ++
-                (color \detailColor \message) ++
-                (color \detailColor pad.left \timeTaken \barSize - size \message) ++
+                (\colored \detailColor \message) ++
+                (\colored \detailColor pad.left \timeTaken \barSize - size \message) ++
                 (\space 2 + \percentageSize + size \barAfter)
             ) 
             -> ""
@@ -236,9 +236,9 @@ define :progressbar [
     finalMinimalist: method [][
         " " ++ \neat 
             rotate @[
-                color.bold \labelColor \label
+                \colored.bold \labelColor \label
                 \timeTaken
-                color \checkColor \checkMark
+                \colored \checkColor \checkMark
             ] \animated? ? -> 2 -> 0
     ]
 
