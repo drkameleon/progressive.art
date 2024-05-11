@@ -95,7 +95,7 @@ Progressive comes with *lots* of different options so that you are able to custo
 |----|----|
 | .simple | make details, above the progress bar, disappear |
 | .counter | counter mode (= don't show a progress bar) |
-| .static | don't show animated spinner
+| .static | don't show animated spinner |
 | .ratioless | don't show progress as a ratio |
 | .keep | keep progress bar as-is after finishing, without minimizing |
 | .hide | hide progress bar completely, after finishing |
