@@ -61,6 +61,7 @@ define :progressbar [
         \animated?:     null? attr 'static
         \hasBar?:       null? attr 'counter
         \hasRatio?:     null? attr 'ratioless
+        \hasColor?:     null? attr 'colorless
 
         \hasDetails?:   null? attr 'simple
         \persistent?:   not? null? attr 'keep
@@ -94,9 +95,9 @@ define :progressbar [
         join.with:" " @ strblk
     ]
 
-    colored: function [col, str][
-        (col = #white)? -> str
-                        -> color col str
+    colored: method [col, str][
+        (or? col = #white not? \hasColor?)? -> str
+                                            -> color col str
     ]
 
     friendlyTime: function [num][
