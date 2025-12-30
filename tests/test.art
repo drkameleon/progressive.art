@@ -1,7 +1,7 @@
 import ./{../src/progressive}!
 
 progressiveWithOptions: function [opts][
-    print [color #magenta " > Progressive / with options:" as.code opts "\n"]
+    print [color #magenta " > Progressive / with options:" express opts "\n"]
     do [progressive\loop] ++ opts ++ [
         repeat list "." 5 'x [
             processing extract.basename x
