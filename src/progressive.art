@@ -24,7 +24,7 @@ define :progressive [
         if and? [block? prm][1 < prmSize: <= size prm] ->
             'maxLim / prmSize
 
-        \progressbar: to :progressbar @[maxLim]!
+        \progressbar: to :progressbar @[maxLim opts]!
     ]
 
     internalFunctions: [
@@ -48,8 +48,11 @@ define :progressive [
 
     getMaxValue: function [collection][
         getCollectionParamSize: function [c][
-            (integer? c)? -> c
-                          -> size c
+            if integer? c -> return c
+            ; dictionaries & objects are iterated
+            ; as a flat list of keys and values
+            if or? dictionary? c object? c -> return 2 * size c
+            size c
         ]
 
         unless literal? collection ->
@@ -62,7 +65,7 @@ define :progressive [
     ; Private methods
     ;---------------------------
 
-    executeIterator: method [iter :literal][
+    executeIterator: method [iter :literal, opts :dictionary][
         do \initializeProgressBar
         return \internalFunctions ++ 
                (@[to :word iter]) ++ 
@@ -73,24 +76,32 @@ define :progressive [
     ; Public methods
     ;---------------------------
 
+    ; Note: every public method grabs *all* of its attributes
+    ; (via `attrs`) first thing, so that none of them leaks
+    ; into any subsequent function call
+
     new: method [maximumValue :integer][
-        to :progressbar @[maximumValue]
+        to :progressbar @[maximumValue attrs]
     ]
 
     loop: method [coll, prm, blk][
-        do \executeIterator 'loop
+        opts: attrs
+        do \executeIterator 'loop opts
     ]
 
     map: method [coll, prm, blk][
-        do \executeIterator 'map
+        opts: attrs
+        do \executeIterator 'map opts
     ]
     
     select: method [coll, prm, blk][
-        do \executeIterator 'select
+        opts: attrs
+        do \executeIterator 'select opts
     ]
 
     filter: method [coll, prm, blk][
-        do \executeIterator 'filter
+        opts: attrs
+        do \executeIterator 'filter opts
     ]
 ]
 
