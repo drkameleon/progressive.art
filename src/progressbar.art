@@ -29,6 +29,7 @@ define :progressbar [
         \current: 0
         \maxValue: maxValue
         \run: 0
+        \drawn: 0
 
         ; initialize settings
         \label:             (lbl: <= attr 'label)?          -> lbl -> "Progress:"
@@ -84,7 +85,9 @@ define :progressbar [
     ;---------------------------
 
     width: function [][
-       terminal\width
+        ; one column less than the terminal width,
+        ; so that a full line never auto-wraps
+        dec terminal\width
     ]
 
     space: function [spacelen][
@@ -126,13 +129,13 @@ define :progressbar [
     ;---------------------------
 
     goBack: method [][
-        prints repeat "\b" \width * enumerate @[\hasDetails? \hasBar?] => [&]
-    ]
-
-    cleanUp: method [][
-        \goBack
-        prints \space \width * enumerate @[\hasDetails? \hasBar?] => [&]
-        \goBack
+        ; move the cursor back to the beginning
+        ; of the first line we've drawn and clear
+        ; everything from there to the end of the screen
+        if \drawn > 0 -> prints "\r"
+        if \drawn > 1 -> prints repeat "\e[A" \drawn - 1
+        if \drawn > 0 -> prints "\e[J"
+        \drawn: 0
     ]
 
     timeLeft: method [][
@@ -234,7 +237,7 @@ define :progressbar [
                 ]) ++
                 (\colored \detailColor \message) ++
                 (\colored \detailColor pad.left \timeTaken \barSize - size \message) ++
-                (\space 2 + \percentageSize + size \barAfter)
+                "\n"
             ) 
             -> ""
         ) ++ \barLine
@@ -258,8 +261,9 @@ define :progressbar [
         if \animated? -> \run: \run + 1
 
         \goBack
-        prints \detailLine
-        prints \barLine
+        lines: select @[\detailLine \barLine] => [not? empty? &]
+        prints join.with:"\n" lines
+        \drawn: size lines
 
         if \current >= \maxValue [
             \active?: false
@@ -268,7 +272,7 @@ define :progressbar [
     ]
 
     stop: method [][
-        \cleanUp
+        \goBack
         unless \hide? [
             print (and? \persistent? \hasBar?)?
                 -> \finalComplete
