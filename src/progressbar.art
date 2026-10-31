@@ -169,7 +169,18 @@ define :progressbar [
     detailLine: method [][
         if not? \hasDetails? -> return ""
 
-        dtlText: (\hasRatio? ? -> ~"|\current|/|\maxValue| ➔ " -> "") ++ \processing
+        ratio: \hasRatio? ? -> ~"|\current|/|\maxValue| ➔ " -> ""
+        reserved: (not? \hasBar?)?
+            -> sum @[2 + size \label, \animationSize, 8]
+            -> sum @[2 + size \label, \animationSize, \percentageSize + 1, size \barBefore, size \barAfter, 2]
+
+        ; make sure the whole thing fits in a single line
+        proc: \processing
+        room: \width - sum @[reserved, size ratio, size \timeLeft, 1]
+        if room < size proc ->
+            proc: (room > 3)? -> (take proc room - 3) ++ "..." -> ""
+
+        dtlText: ratio ++ proc
 
         (not? \hasBar?)? 
             -> \neat [
