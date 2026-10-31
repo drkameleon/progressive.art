@@ -29,6 +29,7 @@ define :progressbar [
         \current: 0
         \maxValue: maxValue
         \run: 0
+        \drawn: 0
 
         ; initialize settings
         opts: extend #[
@@ -91,7 +92,9 @@ define :progressbar [
     ;---------------------------
 
     width: function [][
-       terminal\width
+        ; one column less than the terminal width,
+        ; so that a full line never auto-wraps
+        dec terminal\width
     ]
 
     space: function [spacelen][
@@ -103,17 +106,22 @@ define :progressbar [
     ]
 
     colored: method [col, str][
-        (or? col = #white not? \hasColor?)? -> str
-                                            -> color col str
+        ; always consume the attribute,
+        ; otherwise it leaks into the next call
+        bold?: not? null? attr 'bold
+
+        if not? \hasColor? -> return str
+        if col = #white -> return (bold?)? -> "\e[1m" ++ str ++ "\e[22m" -> str
+
+        (bold?)? -> color.bold col str
+                 -> color col str
     ]
 
     friendlyTime: function [num][
         if null? num    -> return "?"
         if num = 0      -> return "< 1s"
         if num < 60     -> return ~"~ |num|s"
-        if num = 60     -> return "< 1min"
         if num < 60*60  -> return ~"~ |num / 60|min |num % 60|s"
-        if num = 60*60  -> return "< 1h"
         
         [hours,rest]    : divmod num 60*60
         [mins,secs]     : divmod rest 60 
@@ -126,13 +134,19 @@ define :progressbar [
     ;---------------------------
 
     goBack: method [][
-        prints repeat "\b" \width * enumerate @[\hasDetails? \hasBar?] => [&]
+        ; move the cursor back to the beginning
+        ; of the first line we've drawn and clear
+        ; everything from there to the end of the screen
+        if \drawn > 0 -> prints "\r"
+        if \drawn > 1 -> prints repeat "\e[A" \drawn - 1
+        if \drawn > 0 -> prints "\e[J"
+        \drawn: 0
     ]
 
-    cleanUp: method [][
-        \goBack
-        prints \space \width * enumerate @[\hasDetails? \hasBar?] => [&]
-        \goBack
+    progress: method [][
+        ; completed fraction (between 0.0 and 1.0)
+        if zero? \maxValue -> return 1.0
+        min @[1.0, \current // \maxValue]
     ]
 
     timeLeft: method [][
@@ -160,13 +174,24 @@ define :progressbar [
     ]
 
     percentage: method [][
-        pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" \percentageSize
+        pad.left (to :string .format:".1f" 100 * \progress) ++ "%" \percentageSize
     ]
 
     detailLine: method [][
         if not? \hasDetails? -> return ""
 
-        dtlText: (\hasRatio? ? -> ~"|\current|/|\maxValue| ➔ " -> "") ++ \processing
+        ratio: \hasRatio? ? -> ~"|\current|/|\maxValue| ➔ " -> ""
+        reserved: (not? \hasBar?)?
+            -> sum @[2 + size \label, \animationSize, 8]
+            -> sum @[2 + size \label, \animationSize, \percentageSize + 1, size \barBefore, size \barAfter, 2]
+
+        ; make sure the whole thing fits in a single line
+        proc: \processing
+        room: \width - sum @[reserved, size ratio, size \timeLeft, 1]
+        if room < size proc ->
+            proc: (room > 3)? -> (take proc room - 3) ++ "..." -> ""
+
+        dtlText: ratio ++ proc
 
         (not? \hasBar?)? 
             -> \neat [
@@ -196,7 +221,7 @@ define :progressbar [
     ]
 
     bar: method [][
-        ons: (\current * \barSize) / \maxValue
+        ons: floor \barSize * \progress
         offs: \barSize - ons
 
         ; attempt at gradient colors, etc :)
@@ -219,7 +244,7 @@ define :progressbar [
             \animation
             \colored.bold \labelColor \label
             \bar
-            \colored \percentColor \percentage
+            \colored.bold \percentColor \percentage
         ]
     ]
 
@@ -234,7 +259,7 @@ define :progressbar [
                 ]) ++
                 (\colored \detailColor \message) ++
                 (\colored \detailColor pad.left \timeTaken \barSize - size \message) ++
-                (\space 2 + \percentageSize + size \barAfter)
+                "\n"
             ) 
             -> ""
         ) ++ \barLine
@@ -245,7 +270,7 @@ define :progressbar [
             rotate @[
                 \colored.bold \labelColor \label
                 \timeTaken
-                \colored \checkColor \checkMark
+                \colored.bold \checkColor \checkMark
             ] \animated? ? -> 2 -> 0
     ]
 
@@ -258,8 +283,9 @@ define :progressbar [
         if \animated? -> \run: \run + 1
 
         \goBack
-        prints \detailLine
-        prints \barLine
+        lines: select @[\detailLine \barLine] => [not? empty? &]
+        prints join.with:"\n" lines
+        \drawn: size lines
 
         if \current >= \maxValue [
             \active?: false
@@ -268,7 +294,7 @@ define :progressbar [
     ]
 
     stop: method [][
-        \cleanUp
+        \goBack
         unless \hide? [
             print (and? \persistent? \hasBar?)?
                 -> \finalComplete
