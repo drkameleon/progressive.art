@@ -136,6 +136,14 @@ define :progressbar [
     ; Private methods
     ;---------------------------
 
+    draw: method [][
+        \goBack
+        lines: select @[\detailLine \barLine] => [not? empty? &]
+        prints join.with:"\n" lines
+        \drawn: size lines
+        \lastDraw: \clock
+    ]
+
     goBack: method [][
         ; move the cursor back to the beginning
         ; of the first line we've drawn and clear
@@ -144,14 +152,6 @@ define :progressbar [
         if \drawn > 1 -> prints repeat "\e[A" \drawn - 1
         if \drawn > 0 -> prints "\e[J"
         \drawn: 0
-    ]
-
-    draw: method [][
-        \goBack
-        lines: select @[\detailLine \barLine] => [not? empty? &]
-        prints join.with:"\n" lines
-        \drawn: size lines
-        \lastDraw: \clock
     ]
 
     timeLeft: method [][
