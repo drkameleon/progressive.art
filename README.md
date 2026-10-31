@@ -5,7 +5,7 @@
 <p align="center">
      <i>A customizeable, text-based progress bar generator & library for Arturo</i> 
      <br><br>
-     <img src="https://img.shields.io/github/license/arturo-lang/grafito?style=for-the-badge">
+     <img src="https://img.shields.io/github/license/drkameleon/progressive.art?style=for-the-badge">
     <a href="https://github.com/arturo-lang/arturo" style="text-decoration: none; display: inline-block;"><img src="https://img.shields.io/badge/language-Arturo-6A156B.svg?style=for-the-badge" alt="Language"/></a>
 </p>
 
@@ -58,6 +58,9 @@ progressive\loop 1..20 'x [
 > - [filter](https://arturo-lang.io/documentation/library/iterators/filter/)
 
 > [!TIP]
+> Want to process items concurrently? Just add `.parallel` (or `.parallel: N`, to cap the number of items in flight) - e.g. `progressive\map.parallel urls 'u [ ... ]`. The progress bar will keep track of completed items, as they finish. (Requires a recent - nightly - build of Arturo and a single iteration parameter, e.g. `'x`)
+
+> [!TIP]
 > By calling the magic function `processing` from inside a progressive iterator, you may pass information which will be displayed above the progress bar (as in: "what is currently being processed?")
 
 #### Custom progress bars
@@ -100,6 +103,7 @@ Progressive comes with *lots* of different options so that you are able to custo
 | .ratioless | don't show progress as a ratio |
 | .keep | keep progress bar as-is after finishing, without minimizing |
 | .hide | hide progress bar completely, after finishing |
+| .parallel | (iterators only) process items concurrently; `.parallel: N` caps the number of items in flight |
 
 #### More customization
 
@@ -115,7 +119,7 @@ Progressive comes with *lots* of different options so that you are able to custo
 | .offColor | :color | set color for "inactive" progress bar portions | `#white` |
 | .headMark | :string | character for the "tip" of the progress bar | `""` |
 | .barBefore | :string | custom prefix, just before the progress bar | `""` |
-| .barAfter | :string | custome suffix, just after the progress bar | `""` |
+| .barAfter | :string | custom suffix, just after the progress bar | `""` |
 | .checkMark | :string | success icon | `"✔"` |
 | .checkColor | :color | color for the success icon | `#green` |
 | .percentColor | :color | color for the percentage | `#green` |

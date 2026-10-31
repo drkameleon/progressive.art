@@ -28,4 +28,6 @@ loop [
     [.hide]
     [.label:"Downloading"]
     [.onMark:"X" .offMark:"-"]
+    [.parallel]
+    [.parallel:2 .keep]
 ] => progressiveWithOptions
