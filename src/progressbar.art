@@ -24,7 +24,7 @@ define :progressbar [
     ; Constructor
     ;---------------------------
 
-    init: method [maxValue :integer][
+    init: method [maxValue :integer, options :dictionary][
         ; initialize values
         \current: 0
         \maxValue: maxValue
@@ -32,41 +32,48 @@ define :progressbar [
         \drawn: 0
 
         ; initialize settings
-        \label:             (lbl: <= attr 'label)?          -> lbl -> "Progress:"
-        \message:           (msg: <= attr 'message)?        -> msg -> ""
-        \timeLeftLabel:     (tll: <= attr 'timeLeftLabel)?  -> tll -> "left"
-        \timeTakenLabel:    (ttl: <= attr 'timeTakenLabel)? -> ttl -> "Completed in"
+        opts: extend #[
+            label:          "Progress:"
+            message:        ""
+            timeLeftLabel:  "left"
+            timeTakenLabel: "Completed in"
+        ] options
+
+        \label:             opts\label
+        \message:           opts\message
+        \timeLeftLabel:     opts\timeLeftLabel
+        \timeTakenLabel:    opts\timeTakenLabel
         \processing:        ""
         \animated?:         true
 
         ; initialize style
         do \defaultStyle
 
-        if attr 'plain -> do \plainStyle
-        if attr 'fancy -> do \fancyStyle
+        if key? opts 'plain -> do \plainStyle
+        if key? opts 'fancy -> do \fancyStyle
 
-        if anm: <= attr 'animation      -> \animations:     anm
-        if bab: <= attr 'barBefore      -> \barBefore:      bab
-        if baf: <= attr 'barAfter       -> \barAfter:       baf
-        if onm: <= attr 'onMark         -> \onMark:         onm
-        if onc: <= attr 'onColor        -> \onColor:        onc
-        if ofm: <= attr 'offMark        -> \offMark:        ofm
-        if ofc: <= attr 'offColor       -> \offColor:       ofc
-        if hem: <= attr 'headMark       -> \headMark:       hem
-        if lac: <= attr 'labelColor     -> \labelColor:     lac
-        if dtc: <= attr 'detailColor    -> \detailColor:    dtc
-        if ckm: <= attr 'checkMark      -> \checkMark:      ckm
-        if ckc: <= attr 'checkColor     -> \checkColor:     ckc
-        if pcc: <= attr 'percentColor   -> \percentColor:   pcc
+        if key? opts 'animation     -> \animations:     opts\animation
+        if key? opts 'barBefore     -> \barBefore:      opts\barBefore
+        if key? opts 'barAfter      -> \barAfter:       opts\barAfter
+        if key? opts 'onMark        -> \onMark:         opts\onMark
+        if key? opts 'onColor       -> \onColor:        opts\onColor
+        if key? opts 'offMark       -> \offMark:        opts\offMark
+        if key? opts 'offColor      -> \offColor:       opts\offColor
+        if key? opts 'headMark      -> \headMark:       opts\headMark
+        if key? opts 'labelColor    -> \labelColor:     opts\labelColor
+        if key? opts 'detailColor   -> \detailColor:    opts\detailColor
+        if key? opts 'checkMark     -> \checkMark:      opts\checkMark
+        if key? opts 'checkColor    -> \checkColor:     opts\checkColor
+        if key? opts 'percentColor  -> \percentColor:   opts\percentColor
 
-        \animated?:     null? attr 'static
-        \hasBar?:       null? attr 'counter
-        \hasRatio?:     null? attr 'ratioless
-        \hasColor?:     null? attr 'colorless
+        \animated?:     not? key? opts 'static
+        \hasBar?:       not? key? opts 'counter
+        \hasRatio?:     not? key? opts 'ratioless
+        \hasColor?:     not? key? opts 'colorless
 
-        \hasDetails?:   null? attr 'simple
-        \persistent?:   not? null? attr 'keep
-        \hide?:         not? null? attr 'hide
+        \hasDetails?:   not? key? opts 'simple
+        \persistent?:   key? opts 'keep
+        \hide?:         key? opts 'hide
 
         \animationSize:     \animated? ? -> inc size first \animations
                                          -> 0
