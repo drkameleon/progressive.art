@@ -74,7 +74,7 @@ define :progressbar [
         \percentageSize:    (and? \persistent? \hasBar?)? -> 6 -> 5
 
         ; let's start
-        \startTime: to :integer now
+        \startTime: \clock
         \active?: true
 
         ; hide the cursor
@@ -84,6 +84,12 @@ define :progressbar [
     ;---------------------------
     ; Helpers
     ;---------------------------
+
+    clock: function [][
+        ; current time, in milliseconds
+        t: now
+        (1000 * to :integer t) + t\nanosecond / 1000000
+    ]
 
     width: function [][
         ; one column less than the terminal width,
@@ -133,9 +139,9 @@ define :progressbar [
     ]
 
     timeLeft: method [][
-        timeUpToNow: (to :integer now) - \startTime
+        elapsed: \clock - \startTime
         remaining: (zero? \current)? -> ø
-                                     -> div (\maxValue - \current) * timeUpToNow \current
+                                     -> floor ((\maxValue - \current) * elapsed) / 1000 * \current
         return \neat [
             \friendlyTime remaining
             \timeLeftLabel
@@ -143,10 +149,10 @@ define :progressbar [
     ]
 
     timeTaken: method [][
-        timeUpToNow: (to :integer now) - \startTime
+        elapsed: floor (\clock - \startTime) / 1000
         return \neat [
             \timeTakenLabel
-            replace \friendlyTime timeUpToNow "~ " ""
+            replace \friendlyTime elapsed "~ " ""
         ]
     ]
 
