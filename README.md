@@ -58,6 +58,9 @@ progressive\loop 1..20 'x [
 > - [filter](https://arturo-lang.io/documentation/library/iterators/filter/)
 
 > [!TIP]
+> Want to process items concurrently? Just add `.parallel` (or `.parallel: N`, to cap the number of items in flight) - e.g. `progressive\map.parallel urls 'u [ ... ]`. The progress bar will keep track of completed items, as they finish. (Requires a recent - nightly - build of Arturo and a single iteration parameter, e.g. `'x`)
+
+> [!TIP]
 > By calling the magic function `processing` from inside a progressive iterator, you may pass information which will be displayed above the progress bar (as in: "what is currently being processed?")
 
 #### Custom progress bars
@@ -100,6 +103,7 @@ Progressive comes with *lots* of different options so that you are able to custo
 | .ratioless | don't show progress as a ratio |
 | .keep | keep progress bar as-is after finishing, without minimizing |
 | .hide | hide progress bar completely, after finishing |
+| .parallel | (iterators only) process items concurrently; `.parallel: N` caps the number of items in flight |
 
 #### More customization
 
