@@ -5,7 +5,7 @@
 <p align="center">
      <i>A customizeable, text-based progress bar generator & library for Arturo</i> 
      <br><br>
-     <img src="https://img.shields.io/github/license/arturo-lang/grafito?style=for-the-badge">
+     <img src="https://img.shields.io/github/license/drkameleon/progressive.art?style=for-the-badge">
     <a href="https://github.com/arturo-lang/arturo" style="text-decoration: none; display: inline-block;"><img src="https://img.shields.io/badge/language-Arturo-6A156B.svg?style=for-the-badge" alt="Language"/></a>
 </p>
 
@@ -115,7 +115,7 @@ Progressive comes with *lots* of different options so that you are able to custo
 | .offColor | :color | set color for "inactive" progress bar portions | `#white` |
 | .headMark | :string | character for the "tip" of the progress bar | `""` |
 | .barBefore | :string | custom prefix, just before the progress bar | `""` |
-| .barAfter | :string | custome suffix, just after the progress bar | `""` |
+| .barAfter | :string | custom suffix, just after the progress bar | `""` |
 | .checkMark | :string | success icon | `"✔"` |
 | .checkColor | :color | color for the success icon | `#green` |
 | .percentColor | :color | color for the percentage | `#green` |
