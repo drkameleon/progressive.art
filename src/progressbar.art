@@ -198,14 +198,17 @@ define :progressbar [
         ons: floor \barSize * \progress
         offs: \barSize - ons
 
+        ; only show the head, if there's room for it
+        head: (and? \active? ons >= size \headMark)? -> \headMark -> ""
+
         ; attempt at gradient colors, etc :)
         ; pal: palette.monochrome.size: \barSize \onColor
         ; onBar: join map.with:'i  ons 'x -> color pal\[i] \onMark
 
         join @[
             \colored \labelColor \barBefore
-            \colored \onColor repeat \onMark ons - (\active? ? -> size \headMark -> 0)
-            (\active? ? -> \colored \onColor \headMark -> "")
+            \colored \onColor repeat \onMark ons - size head
+            \colored \onColor head
             \colored \offColor repeat \offMark offs
             \colored \labelColor \barAfter
         ]
