@@ -30,6 +30,7 @@ define :progressbar [
         \maxValue: maxValue
         \run: 0
         \drawn: 0
+        \finished?: false
 
         ; initialize settings
         \label:             (lbl: <= attr 'label)?          -> lbl -> "Progress:"
@@ -249,29 +250,38 @@ define :progressbar [
     ; Public methods
     ;---------------------------
 
+    ; Note: `switch` is used here (and in `stop`) instead of
+    ; `if`/`unless` with a block, on purpose: method calls (`\method`)
+    ; from within an `if`/`unless` block may end up being dispatched
+    ; to the very first instance of the type
     increase: method [q :integer :floating][
-        \current: \current + q
-        if \animated? -> \run: \run + 1
+        switch \active? [
+            \current: min @[\maxValue, \current + q]
+            if \animated? -> \run: \run + 1
 
-        \goBack
-        lines: select @[\detailLine \barLine] => [not? empty? &]
-        prints join.with:"\n" lines
-        \drawn: size lines
+            \goBack
+            lines: select @[\detailLine \barLine] => [not? empty? &]
+            prints join.with:"\n" lines
+            \drawn: size lines
 
-        if \current >= \maxValue [
-            \active?: false
-            \stop
-        ]
+            switch \current >= \maxValue [
+                \active?: false
+                \stop
+            ][]
+        ][]
     ]
 
     stop: method [][
-        \goBack
-        unless \hide? [
-            print (and? \persistent? \hasBar?)?
-                -> \finalComplete
-                -> \finalMinimalist
+        switch \finished? [][
+            \finished?: true
+            \active?: false
+            \goBack
+            switch \hide? [][
+                print (and? \persistent? \hasBar?)?
+                    -> \finalComplete
+                    -> \finalMinimalist
+            ]
+            cursor true
         ]
-        \active?: false
-        cursor true
     ]
 ]
