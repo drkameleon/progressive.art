@@ -96,8 +96,15 @@ define :progressbar [
     ]
 
     colored: method [col, str][
-        (or? col = #white not? \hasColor?)? -> str
-                                            -> color col str
+        ; always consume the attribute,
+        ; otherwise it leaks into the next call
+        bold?: not? null? attr 'bold
+
+        if not? \hasColor? -> return str
+        if col = #white -> return (bold?)? -> "\e[1m" ++ str ++ "\e[22m" -> str
+
+        (bold?)? -> color.bold col str
+                 -> color col str
     ]
 
     friendlyTime: function [num][
@@ -212,7 +219,7 @@ define :progressbar [
             \animation
             \colored.bold \labelColor \label
             \bar
-            \colored \percentColor \percentage
+            \colored.bold \percentColor \percentage
         ]
     ]
 
@@ -238,7 +245,7 @@ define :progressbar [
             rotate @[
                 \colored.bold \labelColor \label
                 \timeTaken
-                \colored \checkColor \checkMark
+                \colored.bold \checkColor \checkMark
             ] \animated? ? -> 2 -> 0
     ]
 
