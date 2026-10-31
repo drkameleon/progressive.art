@@ -21,6 +21,13 @@ define :progressbar [
     fancyStyle:     to :block read ./"styles/fancy.art"
 
     ;---------------------------
+    ; Settings
+    ;---------------------------
+
+    ; minimum time between two redraws (in ms)
+    refreshRate:    50
+
+    ;---------------------------
     ; Constructor
     ;---------------------------
 
@@ -30,6 +37,7 @@ define :progressbar [
         \maxValue: maxValue
         \run: 0
         \drawn: 0
+        \lastDraw: 0
         \finished?: false
 
         ; initialize settings
@@ -136,6 +144,14 @@ define :progressbar [
         if \drawn > 1 -> prints repeat "\e[A" \drawn - 1
         if \drawn > 0 -> prints "\e[J"
         \drawn: 0
+    ]
+
+    draw: method [][
+        \goBack
+        lines: select @[\detailLine \barLine] => [not? empty? &]
+        prints join.with:"\n" lines
+        \drawn: size lines
+        \lastDraw: \clock
     ]
 
     timeLeft: method [][
@@ -265,15 +281,12 @@ define :progressbar [
             \current: min @[\maxValue, \current + q]
             if \animated? -> \run: \run + 1
 
-            \goBack
-            lines: select @[\detailLine \barLine] => [not? empty? &]
-            prints join.with:"\n" lines
-            \drawn: size lines
-
             switch \current >= \maxValue [
                 \active?: false
                 \stop
-            ][]
+            ][
+                if \refreshRate =< \clock - \lastDraw -> \draw
+            ]
         ][]
     ]
 
