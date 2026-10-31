@@ -114,9 +114,7 @@ define :progressbar [
         if null? num    -> return "?"
         if num = 0      -> return "< 1s"
         if num < 60     -> return ~"~ |num|s"
-        if num = 60     -> return "< 1min"
         if num < 60*60  -> return ~"~ |num / 60|min |num % 60|s"
-        if num = 60*60  -> return "< 1h"
         
         [hours,rest]    : divmod num 60*60
         [mins,secs]     : divmod rest 60 
