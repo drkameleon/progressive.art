@@ -24,7 +24,7 @@ define :progressbar [
     ; Constructor
     ;---------------------------
 
-    init: method [maxValue :integer][
+    init: method [maxValue :integer, options :dictionary][
         ; initialize values
         \current: 0
         \maxValue: maxValue
@@ -33,41 +33,48 @@ define :progressbar [
         \finished?: false
 
         ; initialize settings
-        \label:             (lbl: <= attr 'label)?          -> lbl -> "Progress:"
-        \message:           (msg: <= attr 'message)?        -> msg -> ""
-        \timeLeftLabel:     (tll: <= attr 'timeLeftLabel)?  -> tll -> "left"
-        \timeTakenLabel:    (ttl: <= attr 'timeTakenLabel)? -> ttl -> "Completed in"
+        opts: extend #[
+            label:          "Progress:"
+            message:        ""
+            timeLeftLabel:  "left"
+            timeTakenLabel: "Completed in"
+        ] options
+
+        \label:             opts\label
+        \message:           opts\message
+        \timeLeftLabel:     opts\timeLeftLabel
+        \timeTakenLabel:    opts\timeTakenLabel
         \processing:        ""
         \animated?:         true
 
         ; initialize style
         do \defaultStyle
 
-        if attr 'plain -> do \plainStyle
-        if attr 'fancy -> do \fancyStyle
+        if key? opts 'plain -> do \plainStyle
+        if key? opts 'fancy -> do \fancyStyle
 
-        if anm: <= attr 'animation      -> \animations:     anm
-        if bab: <= attr 'barBefore      -> \barBefore:      bab
-        if baf: <= attr 'barAfter       -> \barAfter:       baf
-        if onm: <= attr 'onMark         -> \onMark:         onm
-        if onc: <= attr 'onColor        -> \onColor:        onc
-        if ofm: <= attr 'offMark        -> \offMark:        ofm
-        if ofc: <= attr 'offColor       -> \offColor:       ofc
-        if hem: <= attr 'headMark       -> \headMark:       hem
-        if lac: <= attr 'labelColor     -> \labelColor:     lac
-        if dtc: <= attr 'detailColor    -> \detailColor:    dtc
-        if ckm: <= attr 'checkMark      -> \checkMark:      ckm
-        if ckc: <= attr 'checkColor     -> \checkColor:     ckc
-        if pcc: <= attr 'percentColor   -> \percentColor:   pcc
+        if key? opts 'animation     -> \animations:     opts\animation
+        if key? opts 'barBefore     -> \barBefore:      opts\barBefore
+        if key? opts 'barAfter      -> \barAfter:       opts\barAfter
+        if key? opts 'onMark        -> \onMark:         opts\onMark
+        if key? opts 'onColor       -> \onColor:        opts\onColor
+        if key? opts 'offMark       -> \offMark:        opts\offMark
+        if key? opts 'offColor      -> \offColor:       opts\offColor
+        if key? opts 'headMark      -> \headMark:       opts\headMark
+        if key? opts 'labelColor    -> \labelColor:     opts\labelColor
+        if key? opts 'detailColor   -> \detailColor:    opts\detailColor
+        if key? opts 'checkMark     -> \checkMark:      opts\checkMark
+        if key? opts 'checkColor    -> \checkColor:     opts\checkColor
+        if key? opts 'percentColor  -> \percentColor:   opts\percentColor
 
-        \animated?:     null? attr 'static
-        \hasBar?:       null? attr 'counter
-        \hasRatio?:     null? attr 'ratioless
-        \hasColor?:     null? attr 'colorless
+        \animated?:     not? key? opts 'static
+        \hasBar?:       not? key? opts 'counter
+        \hasRatio?:     not? key? opts 'ratioless
+        \hasColor?:     not? key? opts 'colorless
 
-        \hasDetails?:   null? attr 'simple
-        \persistent?:   not? null? attr 'keep
-        \hide?:         not? null? attr 'hide
+        \hasDetails?:   not? key? opts 'simple
+        \persistent?:   key? opts 'keep
+        \hide?:         key? opts 'hide
 
         \animationSize:     \animated? ? -> inc size first \animations
                                          -> 0
@@ -106,17 +113,22 @@ define :progressbar [
     ]
 
     colored: method [col, str][
-        (or? col = #white not? \hasColor?)? -> str
-                                            -> color col str
+        ; always consume the attribute,
+        ; otherwise it leaks into the next call
+        bold?: not? null? attr 'bold
+
+        if not? \hasColor? -> return str
+        if col = #white -> return (bold?)? -> "\e[1m" ++ str ++ "\e[22m" -> str
+
+        (bold?)? -> color.bold col str
+                 -> color col str
     ]
 
     friendlyTime: function [num][
         if null? num    -> return "?"
         if num = 0      -> return "< 1s"
         if num < 60     -> return ~"~ |num|s"
-        if num = 60     -> return "< 1min"
         if num < 60*60  -> return ~"~ |num / 60|min |num % 60|s"
-        if num = 60*60  -> return "< 1h"
         
         [hours,rest]    : divmod num 60*60
         [mins,secs]     : divmod rest 60 
@@ -136,6 +148,12 @@ define :progressbar [
         if \drawn > 1 -> prints repeat "\e[A" \drawn - 1
         if \drawn > 0 -> prints "\e[J"
         \drawn: 0
+    ]
+
+    progress: method [][
+        ; completed fraction (between 0.0 and 1.0)
+        if zero? \maxValue -> return 1.0
+        min @[1.0, \current // \maxValue]
     ]
 
     timeLeft: method [][
@@ -163,13 +181,24 @@ define :progressbar [
     ]
 
     percentage: method [][
-        pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" \percentageSize
+        pad.left (to :string .format:".1f" 100 * \progress) ++ "%" \percentageSize
     ]
 
     detailLine: method [][
         if not? \hasDetails? -> return ""
 
-        dtlText: (\hasRatio? ? -> ~"|\current|/|\maxValue| ➔ " -> "") ++ \processing
+        ratio: \hasRatio? ? -> ~"|\current|/|\maxValue| ➔ " -> ""
+        reserved: (not? \hasBar?)?
+            -> sum @[2 + size \label, \animationSize, 8]
+            -> sum @[2 + size \label, \animationSize, \percentageSize + 1, size \barBefore, size \barAfter, 2]
+
+        ; make sure the whole thing fits in a single line
+        proc: \processing
+        room: \width - sum @[reserved, size ratio, size \timeLeft, 1]
+        if room < size proc ->
+            proc: (room > 3)? -> (take proc room - 3) ++ "..." -> ""
+
+        dtlText: ratio ++ proc
 
         (not? \hasBar?)? 
             -> \neat [
@@ -199,8 +228,11 @@ define :progressbar [
     ]
 
     bar: method [][
-        ons: (\current * \barSize) / \maxValue
+        ons: floor \barSize * \progress
         offs: \barSize - ons
+
+        ; only show the head, if there's room for it
+        head: (and? \active? ons >= size \headMark)? -> \headMark -> ""
 
         ; attempt at gradient colors, etc :)
         ; pal: palette.monochrome.size: \barSize \onColor
@@ -208,8 +240,8 @@ define :progressbar [
 
         join @[
             \colored \labelColor \barBefore
-            \colored \onColor repeat \onMark ons - (\active? ? -> size \headMark -> 0)
-            (\active? ? -> \colored \onColor \headMark -> "")
+            \colored \onColor repeat \onMark ons - size head
+            \colored \onColor head
             \colored \offColor repeat \offMark offs
             \colored \labelColor \barAfter
         ]
@@ -222,7 +254,7 @@ define :progressbar [
             \animation
             \colored.bold \labelColor \label
             \bar
-            \colored \percentColor \percentage
+            \colored.bold \percentColor \percentage
         ]
     ]
 
@@ -244,12 +276,12 @@ define :progressbar [
     ]
 
     finalMinimalist: method [][
-        " " ++ \neat 
-            rotate @[
-                \colored.bold \labelColor \label
-                \timeTaken
-                \colored \checkColor \checkMark
-            ] \animated? ? -> 2 -> 0
+        lbl: \colored.bold \labelColor \label
+        chk: \colored.bold \checkColor \checkMark
+        tkn: \timeTaken
+
+        " " ++ \neat (\animated?)? -> @[chk lbl tkn]
+                                   -> @[lbl tkn chk]
     ]
 
     ;---------------------------
