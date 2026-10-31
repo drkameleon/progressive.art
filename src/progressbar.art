@@ -128,6 +128,12 @@ define :progressbar [
         \goBack
     ]
 
+    progress: method [][
+        ; completed fraction (between 0.0 and 1.0)
+        if zero? \maxValue -> return 1.0
+        min @[1.0, \current // \maxValue]
+    ]
+
     timeLeft: method [][
         timeUpToNow: (to :integer now) - \startTime
         remaining: (zero? \current)? -> ø
@@ -153,7 +159,7 @@ define :progressbar [
     ]
 
     percentage: method [][
-        pad.left (to :string .format:".1f" round.to: 1 (\current * 100) // \maxValue) ++ "%" \percentageSize
+        pad.left (to :string .format:".1f" 100 * \progress) ++ "%" \percentageSize
     ]
 
     detailLine: method [][
@@ -189,7 +195,7 @@ define :progressbar [
     ]
 
     bar: method [][
-        ons: (\current * \barSize) / \maxValue
+        ons: floor \barSize * \progress
         offs: \barSize - ons
 
         ; attempt at gradient colors, etc :)
