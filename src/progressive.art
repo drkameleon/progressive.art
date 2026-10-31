@@ -48,8 +48,11 @@ define :progressive [
 
     getMaxValue: function [collection][
         getCollectionParamSize: function [c][
-            (integer? c)? -> c
-                          -> size c
+            if integer? c -> return c
+            ; dictionaries & objects are iterated
+            ; as a flat list of keys and values
+            if or? dictionary? c object? c -> return 2 * size c
+            size c
         ]
 
         unless literal? collection ->
