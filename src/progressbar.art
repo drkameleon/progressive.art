@@ -241,12 +241,12 @@ define :progressbar [
     ]
 
     finalMinimalist: method [][
-        " " ++ \neat 
-            rotate @[
-                \colored.bold \labelColor \label
-                \timeTaken
-                \colored.bold \checkColor \checkMark
-            ] \animated? ? -> 2 -> 0
+        lbl: \colored.bold \labelColor \label
+        chk: \colored.bold \checkColor \checkMark
+        tkn: \timeTaken
+
+        " " ++ \neat (\animated?)? -> @[chk lbl tkn]
+                                   -> @[lbl tkn chk]
     ]
 
     ;---------------------------
